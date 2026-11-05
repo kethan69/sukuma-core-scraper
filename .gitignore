@@ -1,0 +1,6 @@
+scraped_data.json
+client_export.csv
+client_dynamic_export.json
+delivery_manifest.txt
+scraper.log
+__pycache__/
