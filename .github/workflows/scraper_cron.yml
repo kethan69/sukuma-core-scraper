@@ -6,7 +6,6 @@ on:
   workflow_dispatch:     # Manual trigger from GitHub UI
 
 jobs:
-ve-scraper:
   run-scraper:
     runs-on: ubuntu-latest
     
