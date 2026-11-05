@@ -3,12 +3,10 @@ name: Sukuma Core Cloud Scraper
 on:
   schedule:
     - cron: '0 * * * *' # Runs every hour on the hour
-  workflow_dispatch:     # Allows manual triggering from GitHub UI
-
-permissions:
-  contents: write
+  workflow_dispatch:     # Manual trigger from GitHub UI
 
 jobs:
+ve-scraper:
   run-scraper:
     runs-on: ubuntu-latest
     
@@ -32,25 +30,12 @@ jobs:
       - name: Execute Export Utility
         run: python export_utility.py
 
-      - name: Commit and Push Updated Vault & Exports
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "Sukuma Core Bot"
-          git config --global user.email "sukuma.core@proton.me"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          
-          # Sync with remote branch safely
-          git fetch origin master
-          git rebase origin/master || true
-          
-          # Stage export files safely (ignore if missing)
-          [ -f scraper_vault.db ] && git add scraper_vault.db
-          [ -f client_export.json ] && git add client_export.json
-          [ -f client_export.csv ] && git add client_export.csv
-          
-          # Exit cleanly if no changes were detected
-          git diff --staged --quiet && echo "No changes to sync. Exiting successfully." && exit 0
-          
-          git commit -m "chore(cloud): automated sync and data export [skip ci]"
-          git push origin HEAD:master
+      - name: Upload Data Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sukuma-extracted-data-${{ github.run_id }}
+          path: |
+            scraper_vault.db
+            client_export.json
+            client_export.csv
+          retention-days: 30
