@@ -6,7 +6,7 @@ on:
   workflow_dispatch:     # Allows manual triggering from GitHub UI
 
 permissions:
-  contents: write        # Grants permission to commit and push back to repo
+  contents: write
 
 jobs:
   run-scraper:
@@ -38,6 +38,11 @@ jobs:
         run: |
           git config --global user.name "Sukuma Core Bot"
           git config --global user.email "sukuma.core@proton.me"
-          git add scraper_vault.db client_export.json client_export.csv || true
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # Pull any remote updates with rebase to avoid merge conflicts
+          git pull origin master --rebase || true
+          
+          git add -f scraper_vault.db client_export.json client_export.csv || true
           git commit -m "chore(cloud): automated sync and data export [skip ci]" || echo "No changes to commit"
-          git push origin master || git push origin HEAD:master
+          git push origin master
